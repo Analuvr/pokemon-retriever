@@ -83,4 +83,23 @@ public class PokemonService {
 
         return pokemonList;
     }
+
+    // Metodo para filtrar nombres por fragmento de texto
+    public List<String> searchPokemonByString(String fragment) {
+        String url = "https://pokeapi.co/api/v2/pokemon?limit=1302";
+
+        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+        List<Map<String, String>> results = (List<Map<String, String>>) response.get("results");
+
+        List<String> matchingNames = new ArrayList<>();
+
+        for (Map<String, String> result : results) {
+            String name = result.get("name");
+            if (name.contains(fragment.toLowerCase())){
+                matchingNames.add(name);
+            }
+        }
+
+        return matchingNames;
+    }
 }
