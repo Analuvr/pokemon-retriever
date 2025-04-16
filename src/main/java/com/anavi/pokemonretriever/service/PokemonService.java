@@ -28,7 +28,7 @@ public class PokemonService {
 
         try{
             String url = "https://pokeapi.co/api/v2/pokemon/" + name.toLowerCase();
-            Map response = restTemplate.getForObject(url, Map.class);
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
 
             String pokemonName = (String) response.get("name");
             Double height = ((Number) response.get("height")).doubleValue();
