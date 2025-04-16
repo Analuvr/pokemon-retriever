@@ -34,26 +34,27 @@ public class PokemonService {
 
             // Sprite (imagen)
             Map<String, String> sprites = (Map<String, String>) response.get("sprites");
-            String image = (String) sprites.get("front_default");
+            String image = sprites.get("front_default");
 
             // Abilities
             List<Map<String, Object>> abilitiesList = (List<Map<String, Object>>) response.get("abilities");
             List<String> abilities = new ArrayList<>();
             for (Map<String, Object> abilityMap : abilitiesList){
                 Map<String, String> ability = (Map<String, String>) abilityMap.get("ability");
-                abilities.add((String) ability.get("name"));
+                abilities.add(ability.get("name"));
             }
 
             // Forms
             List<Map<String, String>> formsList = (List<Map<String, String>>) response.get("forms");
             List<String> forms = new ArrayList<>();
             for (Map<String, String> form : formsList){
-                forms.add((String) form.get("name"));
+                forms.add(form.get("name"));
             }
 
             Double height = ((Number) response.get("height")).doubleValue();
 
             return new Pokemon(pokemonName, image, abilities, forms, height);
+
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
                 throw new PokemonNotFoundException(name);
@@ -64,19 +65,44 @@ public class PokemonService {
     }
 
     // Metodo para devolver una lista de 100 Pokémon
-    public List<String> getFirst100Pokemon() {
+    public List<Pokemon> getFirst100Pokemon() {
         String url = "https://pokeapi.co/api/v2/pokemon?limit=100";
 
         Map<String, Object> response = restTemplate.getForObject(url, Map.class);
 
         List<Map<String, String>> results = (List<Map<String, String>>) response.get("results");
 
-        List<String> pokemonNames = new ArrayList<>();
+        List<Pokemon> pokemonList = new ArrayList<>();
 
-        for (Map<String, String> pokemon : results) {
-            pokemonNames.add(pokemon.get("name"));
+        for (Map<String, String> result : results) {
+            String pokemonUrl = result.get("url");
+            Map<String, Object> details = restTemplate.getForObject(pokemonUrl, Map.class);
+
+            String name = (String) details.get("name");
+
+            Map<String, String> sprites = (Map<String, String>) details.get("sprites");
+            String image = sprites.get("front_default");
+
+            List<Map<String, Object>> abilitiesList = (List<Map<String, Object>>) details.get("abilities");
+            List<String> abilities = new ArrayList<>();
+
+            for (Map<String, Object> abilityMap : abilitiesList) {
+                Map<String, String> ability = (Map<String, String>) abilityMap.get("ability");
+                abilities.add(ability.get("name"));
+            }
+
+            List<Map<String, String>> formsList = (List<Map<String, String>>) details.get("forms");
+            List<String> forms = new ArrayList<>();
+            for (Map<String, String> form : formsList){
+                forms.add(form.get("name"));
+            }
+
+            Double height = ((Number) details.get("height")).doubleValue();
+
+            Pokemon pokemon = new Pokemon(name, image, abilities, forms, height);
+            pokemonList.add(pokemon);
         }
 
-        return pokemonNames;
+        return pokemonList;
     }
 }

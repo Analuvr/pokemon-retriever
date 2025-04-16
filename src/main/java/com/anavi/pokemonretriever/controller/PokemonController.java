@@ -20,14 +20,14 @@ public class PokemonController {
         this.pokemonService = pokemonService;
     }
 
+    @GetMapping
+    public List<Pokemon> getFirst100Pokemon() {
+        return pokemonService.getFirst100Pokemon();
+    }
+
     @GetMapping("/{name}")
     public Pokemon getPokemonByName(@PathVariable String name) {
         return pokemonService.getPokemonByName(name);
-    }
-
-    @GetMapping
-    public List<String> getFirst100Pokemon() {
-        return pokemonService.getFirst100Pokemon();
     }
 
 }
