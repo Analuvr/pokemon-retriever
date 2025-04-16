@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(path = "/api/v1/pokemon")
 public class PokemonController {
@@ -22,4 +24,10 @@ public class PokemonController {
     public Pokemon getPokemonByName(@PathVariable String name) {
         return pokemonService.getPokemonByName(name);
     }
+
+    @GetMapping
+    public List<String> getFirst100Pokemon() {
+        return pokemonService.getFirst100Pokemon();
+    }
+
 }

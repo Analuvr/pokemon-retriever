@@ -59,17 +59,22 @@ public class PokemonService {
                 throw e; // Para otros errores
             }
         }
-
-
-
-
-
-
-
-
-
-
-
     }
 
+    // Metodo para devolver una lista de 100 Pokémon
+    public List<String> getFirst100Pokemon() {
+        String url = "https://pokeapi.co/api/v2/pokemon?limit=100";
+
+        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+
+        List<Map<String, String>> results = (List<Map<String, String>>) response.get("results");
+
+        List<String> pokemonNames = new ArrayList<>();
+
+        for (Map<String, String> pokemon : results) {
+            pokemonNames.add(pokemon.get("name"));
+        }
+
+        return pokemonNames;
+    }
 }
