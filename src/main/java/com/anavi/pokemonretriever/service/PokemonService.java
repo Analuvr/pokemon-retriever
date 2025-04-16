@@ -1,5 +1,6 @@
 package com.anavi.pokemonretriever.service;
 
+import com.anavi.pokemonretriever.PokemonRetrieverApplication;
 import com.anavi.pokemonretriever.exception.PokemonNotFoundException;
 import com.anavi.pokemonretriever.model.Pokemon;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,31 +76,8 @@ public class PokemonService {
         List<Pokemon> pokemonList = new ArrayList<>();
 
         for (Map<String, String> result : results) {
-            String pokemonUrl = result.get("url");
-            Map<String, Object> details = restTemplate.getForObject(pokemonUrl, Map.class);
-
-            String name = (String) details.get("name");
-
-            Map<String, String> sprites = (Map<String, String>) details.get("sprites");
-            String image = sprites.get("front_default");
-
-            List<Map<String, Object>> abilitiesList = (List<Map<String, Object>>) details.get("abilities");
-            List<String> abilities = new ArrayList<>();
-
-            for (Map<String, Object> abilityMap : abilitiesList) {
-                Map<String, String> ability = (Map<String, String>) abilityMap.get("ability");
-                abilities.add(ability.get("name"));
-            }
-
-            List<Map<String, String>> formsList = (List<Map<String, String>>) details.get("forms");
-            List<String> forms = new ArrayList<>();
-            for (Map<String, String> form : formsList){
-                forms.add(form.get("name"));
-            }
-
-            Double height = ((Number) details.get("height")).doubleValue();
-
-            Pokemon pokemon = new Pokemon(name, image, abilities, forms, height);
+            String name = result.get("name");
+            Pokemon pokemon = getPokemonByName(name);
             pokemonList.add(pokemon);
         }
 
