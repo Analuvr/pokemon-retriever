@@ -31,26 +31,28 @@ public class PokemonService {
             Map<String, Object> response = restTemplate.getForObject(url, Map.class);
 
             String pokemonName = (String) response.get("name");
-            Double height = ((Number) response.get("height")).doubleValue();
 
             // Sprite (imagen)
-            Map sprites = (Map) response.get("sprites");
+            Map<String, String> sprites = (Map<String, String>) response.get("sprites");
             String image = (String) sprites.get("front_default");
 
             // Abilities
-            List<Map> abilitiesList = (List<Map>) response.get("abilities");
+            List<Map<String, Object>> abilitiesList = (List<Map<String, Object>>) response.get("abilities");
             List<String> abilities = new ArrayList<>();
-            for (Map abilityMap : abilitiesList){
-                Map ability = (Map) abilityMap.get("ability");
+            for (Map<String, Object> abilityMap : abilitiesList){
+                Map<String, String> ability = (Map<String, String>) abilityMap.get("ability");
                 abilities.add((String) ability.get("name"));
             }
 
             // Forms
-            List<Map> formsList = (List<Map>) response.get("forms");
+            List<Map<String, String>> formsList = (List<Map<String, String>>) response.get("forms");
             List<String> forms = new ArrayList<>();
-            for (Map form : formsList){
+            for (Map<String, String> form : formsList){
                 forms.add((String) form.get("name"));
             }
+
+            Double height = ((Number) response.get("height")).doubleValue();
+
             return new Pokemon(pokemonName, image, abilities, forms, height);
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
