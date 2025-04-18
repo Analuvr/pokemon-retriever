@@ -1,6 +1,7 @@
 package com.anavi.pokemonretriever.service;
 
 import com.anavi.pokemonretriever.PokemonRetrieverApplication;
+import com.anavi.pokemonretriever.exception.ExternalApiTimeoutException;
 import com.anavi.pokemonretriever.exception.PokemonNotFoundException;
 import com.anavi.pokemonretriever.model.Pokemon;
 import com.anavi.pokemonretriever.model.SearchHistory;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
@@ -31,8 +33,7 @@ public class PokemonService {
 
     // Metodo para buscar un Pokémon por su nombre
     public Pokemon getPokemonByName(String name){
-
-        try{
+        try {
             String url = "https://pokeapi.co/api/v2/pokemon/" + name.toLowerCase();
             Map<String, Object> response = restTemplate.getForObject(url, Map.class);
 
@@ -67,49 +68,58 @@ public class PokemonService {
             } else {
                 throw e; // Para otros errores
             }
+        } catch (ResourceAccessException e) {
+            throw new ExternalApiTimeoutException();
         }
     }
 
     // Metodo para devolver una lista de 100 Pokémon
     public List<Pokemon> getFirst100Pokemon() {
-        String url = "https://pokeapi.co/api/v2/pokemon?limit=100";
+        try {
+            String url = "https://pokeapi.co/api/v2/pokemon?limit=100";
 
-        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
 
-        List<Map<String, String>> results = (List<Map<String, String>>) response.get("results");
+            List<Map<String, String>> results = (List<Map<String, String>>) response.get("results");
 
-        List<Pokemon> pokemonList = new ArrayList<>();
+            List<Pokemon> pokemonList = new ArrayList<>();
 
-        for (Map<String, String> result : results) {
-            String name = result.get("name");
-            Pokemon pokemon = getPokemonByName(name);
-            pokemonList.add(pokemon);
+            for (Map<String, String> result : results) {
+                String name = result.get("name");
+                Pokemon pokemon = getPokemonByName(name);
+                pokemonList.add(pokemon);
+            }
+
+            return pokemonList;
+        } catch (ResourceAccessException e) {
+            throw new ExternalApiTimeoutException();
         }
-
-        return pokemonList;
     }
 
     // Metodo para filtrar nombres por fragmento de texto
     public List<String> searchPokemonByString(String fragment) {
+        try {
+            // Guarda la búsqueda
+            SearchHistory history = new SearchHistory(fragment.toLowerCase(), LocalDateTime.now());
+            historyRepository.save(history);
 
-        // Guarda la búsqueda
-        SearchHistory history = new SearchHistory(fragment.toLowerCase(), LocalDateTime.now());
-        historyRepository.save(history);
+            String url = "https://pokeapi.co/api/v2/pokemon?limit=1302";
 
-        String url = "https://pokeapi.co/api/v2/pokemon?limit=1302";
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            List<Map<String, String>> results = (List<Map<String, String>>) response.get("results");
 
-        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-        List<Map<String, String>> results = (List<Map<String, String>>) response.get("results");
+            List<String> matchingNames = new ArrayList<>();
 
-        List<String> matchingNames = new ArrayList<>();
-
-        for (Map<String, String> result : results) {
-            String name = result.get("name");
-            if (name.contains(fragment.toLowerCase())){
-                matchingNames.add(name);
+            for (Map<String, String> result : results) {
+                String name = result.get("name");
+                if (name.contains(fragment.toLowerCase())){
+                    matchingNames.add(name);
+                }
             }
-        }
 
-        return matchingNames;
+            return matchingNames;
+        } catch (ResourceAccessException e) {
+            throw new ExternalApiTimeoutException();
+        }
     }
 }

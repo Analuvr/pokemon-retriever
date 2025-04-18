@@ -12,4 +12,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handlePokemonNotFound(PokemonNotFoundException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(ExternalApiTimeoutException.class)
+    public ResponseEntity<String> handleTimeout(ExternalApiTimeoutException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.GATEWAY_TIMEOUT);
+    }
 }
