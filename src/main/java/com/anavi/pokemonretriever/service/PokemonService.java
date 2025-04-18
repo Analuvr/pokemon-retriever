@@ -3,12 +3,15 @@ package com.anavi.pokemonretriever.service;
 import com.anavi.pokemonretriever.PokemonRetrieverApplication;
 import com.anavi.pokemonretriever.exception.PokemonNotFoundException;
 import com.anavi.pokemonretriever.model.Pokemon;
+import com.anavi.pokemonretriever.model.SearchHistory;
+import com.anavi.pokemonretriever.repository.SearchHistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,10 +21,12 @@ public class PokemonService {
 
     // Inyección del cliente HTTP
     private final RestTemplate restTemplate;
+    private final SearchHistoryRepository historyRepository;
 
     @Autowired
-    public PokemonService(RestTemplate restTemplate){
+    public PokemonService(RestTemplate restTemplate, SearchHistoryRepository historyRepository){
         this.restTemplate = restTemplate;
+        this.historyRepository = historyRepository;
     }
 
     // Metodo para buscar un Pokémon por su nombre
@@ -86,6 +91,11 @@ public class PokemonService {
 
     // Metodo para filtrar nombres por fragmento de texto
     public List<String> searchPokemonByString(String fragment) {
+
+        // Guarda la búsqueda
+        SearchHistory history = new SearchHistory(fragment.toLowerCase(), LocalDateTime.now());
+        historyRepository.save(history);
+
         String url = "https://pokeapi.co/api/v2/pokemon?limit=1302";
 
         Map<String, Object> response = restTemplate.getForObject(url, Map.class);
